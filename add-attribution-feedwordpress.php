@@ -1,9 +1,9 @@
 <?php
 /*
-Plugin Name: Add Attribution for FeedWordPress
+Plugin Name: FWP+: Add Attribution
 Plugin URI: http://projects.radgeek.com/add-attribution-feedwordpress/
 Description: enable FeedWordPress to add a prefix or a suffix to elements of syndicated posts, containing attribution information
-Version: 2010.0527
+Version: 2012.0507
 Author: Charles Johnson
 Author URI: http://radgeek.com/
 License: GPL
@@ -291,6 +291,10 @@ class AddSourceInformationReformatter {
 		), $atts);
 		return get_feed_meta($param['key'], $this->id);
 	}
+	function original_link ($atts, $text) {
+		$url = $this->original_url($atts);
+		return '<a href="'.esc_url($url).'">'.do_shortcode($text).'</a>';
+	}
 	function original_url ($atts) {
 		return get_syndication_permalink($this->id);
 	}
@@ -331,6 +335,7 @@ function add_source_information_reformat ($template, $element, $id = NULL) {
 	add_shortcode('source', array($ref, 'source_link'));
 	add_shortcode('source-name', array($ref, 'source_name'));
 	add_shortcode('source-url', array($ref, 'source_url'));
+	add_shortcode('original-link', array($ref, 'original_link'));
 	add_shortcode('original-url', array($ref, 'original_url'));
 	add_shortcode('author', array($ref, 'source_author_link'));
 	add_shortcode('author_name', array($ref, 'source_author'));
