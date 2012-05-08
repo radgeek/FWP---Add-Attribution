@@ -68,7 +68,7 @@ function add_source_information_box ($page, $box = NULL) {
 	<style type="text/css">	
 	.add-attribution-help-box {
 		float: right;
-		width: 200px;
+		width: 300px;
 		border: 1px dotted #777;
 		margin: 3px;
 		padding: 5px;
@@ -93,6 +93,7 @@ function add_source_information_box ($page, $box = NULL) {
 		margin-bottom: 5px;
 		border-bottom: 1px dotted black;
 	}
+	
 	</style>
 
 	<div class="add-attribution-help-box">
@@ -109,6 +110,10 @@ function add_source_information_box ($page, $box = NULL) {
 	<dt><code>[source-url]</code></dt>
 	<dd>URL of the source you syndicated the post from</dd>
 
+	<dt><code>[original-link]text[/original-link]</code></dt>
+	<dd>A link to the <em>original post</em> back on the source website,
+	using <code>text</code> as the link text.</dd>
+	
 	<dt><code>[original-url]</code></dt>
 	<dd>URL of the <em>original post</em> back on the source website</dd>
 
@@ -158,7 +163,7 @@ function add_source_information_box ($page, $box = NULL) {
 <option value="post"<?php print $selected['post']; ?>>content</option>
 <option value="excerpt"<?php print $selected['excerpt']; ?>>excerpt</option>
 </select> of 
-<?php print $syndicatedPosts; ?>: <textarea style="vertical-align: top" rows="2" cols="30" class="add-attribution-template" id="add-attribution-<?php print $index; ?>-template" name="add_attribution[<?php print $index; ?>][template]"><?php print htmlspecialchars($line['template']); ?></textarea></li>
+<?php print $syndicatedPosts; ?>: <textarea style="vertical-align: top; width: 40%;" rows="2" cols="30" class="add-attribution-template" id="add-attribution-<?php print $index; ?>-template" name="add_attribution[<?php print $index; ?>][template]"><?php print htmlspecialchars($line['template']); ?></textarea></li>
 	<?php
 		endif;
 	endforeach;
