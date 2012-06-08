@@ -3,7 +3,7 @@
 Plugin Name: FWP+: Add Attribution
 Plugin URI: http://projects.radgeek.com/add-attribution-feedwordpress/
 Description: enable FeedWordPress to add a prefix or a suffix to elements of syndicated posts, containing attribution information
-Version: 2012.0507
+Version: 2012.0608
 Author: Charles Johnson
 Author URI: http://radgeek.com/
 License: GPL
