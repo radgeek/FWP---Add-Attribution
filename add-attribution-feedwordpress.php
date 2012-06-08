@@ -253,9 +253,40 @@ function add_source_information_save ($params, $page) {
 
 class AddSourceInformationReformatter {
 	var $id, $element;
+
 	function AddSourceInformationReformatter ($id = NULL, $element = 'post') {
 		$this->id = $id;
 		$this->element = $element;
+	}
+
+	function shortcode_methods () {
+		return array(
+			'source' => 'source_link',
+			'source-name' => 'source_name',
+			'source-url' => 'source_url',
+			'original-link' => 'original_link',
+			'original-url' => 'original_url',
+			'author' => 'source_author_link',
+			'author-name' => 'source_author',
+			'feed-setting' => 'source_setting',
+		);
+	}
+	function do_shortcode ($template) {
+		$codes = $this->shortcode_methods();
+
+		// Register shortcodes relative to this object/post ID/element.
+		foreach ($codes as $code => $method) :
+			add_shortcode($code, array($this, $method));
+		endforeach;
+
+		$template = do_shortcode($template);
+		
+		// Unregister shortcodes.
+		foreach ($codes as $code => $method) :
+			remove_shortcode($code);
+		endforeach;
+		
+		return $template;
 	}
 	
 	function source_name ($atts) {
@@ -331,33 +362,12 @@ class AddSourceInformationReformatter {
 }
 
 function add_source_information_reformat ($template, $element, $id = NULL) {
-	if ('post' == $element and !preg_match('/<(p|div)>/i', $template)) :
+	if ('post' == $element and !preg_match('/< (p|div) ( \s [^>]+ )? >/xi', $template)) :
 		$template = '<p class="syndicated-attribution">'.$template.'</p>';
 	endif;
 
-	// Register shortcodes. We need to use an object to preserve the value of $id
 	$ref = new AddSourceInformationReformatter($id, $element);
-	add_shortcode('source', array($ref, 'source_link'));
-	add_shortcode('source-name', array($ref, 'source_name'));
-	add_shortcode('source-url', array($ref, 'source_url'));
-	add_shortcode('original-link', array($ref, 'original_link'));
-	add_shortcode('original-url', array($ref, 'original_url'));
-	add_shortcode('author', array($ref, 'source_author_link'));
-	add_shortcode('author_name', array($ref, 'source_author'));
-	add_shortcode('feed-setting', array($ref, 'source_setting'));
-
-	$template = do_shortcode($template);
-
-	// Unregister shortcodes
-	remove_shortcode('source');
-	remove_shortcode('source-name');
-	remove_shortcode('source-url');
-	remove_shortcode('original-url');
-	remove_shortcode('author');
-	remove_shortcode('author_name');
-	remove_shortcode('feed-setting');
-
-	return $template;
+	return $ref->do_shortcode($template);
 }
 
 function add_source_information_simple ($element, $title, $id = NULL) {
