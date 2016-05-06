@@ -3,11 +3,15 @@
 Plugin Name: FWP+: Add Attribution
 Plugin URI: http://projects.radgeek.com/add-attribution-feedwordpress/
 Description: enable FeedWordPress to add a prefix or a suffix to elements of syndicated posts, containing attribution information
-Version: 2012.0608
+Version: 2016.0506
 Author: Charles Johnson
 Author URI: http://radgeek.com/
 License: GPL
 */
+
+define('ADD_ATTRIBUTION_DEFAULT_HOOK_ORDER', 11000); // at the tail end of the filtering process
+
+$hookOrder = get_option('feedwordpress_add_attribution_hook_order', ADD_ATTRIBUTION_DEFAULT_HOOK_ORDER);
 
 add_action(
 	/*hook=*/ 'feedwordpress_admin_page_posts_meta_boxes',
@@ -24,25 +28,25 @@ add_action(
 add_filter(
 	/*hook=*/ 'the_title',
 	/*function=*/ 'add_source_information_title',
-	/*priority=*/ 11000,
+	/*priority=*/ $hookOrder,
 	/*arguments=*/ 2
 );
 add_filter(
 	/*hook=*/ 'get_the_excerpt',
 	/*function=*/ 'add_source_information_excerpt',
-	/*priority=*/ 11000,
+	/*priority=*/ $hookOrder,
 	/*arguments=*/ 1
 );
 add_filter(
 	/*hook=*/ 'the_content',
 	/*function=*/ 'add_source_information_content',
-	/*priority=*/ 11000,
+	/*priority=*/ $hookOrder,
 	/*arguments=*/ 1
 );
 add_filter(
 	/*hook=*/ 'the_content_rss',
 	/*function=*/ 'add_source_information_content',
-	/*priority=*/ 11000,
+	/*priority=*/ $hookOrder,
 	/*arguments=*/ 1
 );
 
@@ -64,6 +68,7 @@ function add_source_information_box ($page, $box = NULL) {
 		$attrib = get_option('feedwordpress_add_attribution');
 		$syndicatedPosts = 'syndicated posts';
 	endif;
+	$hookOrder = intval($page->setting('add attribution hook order', ADD_ATTRIBUTION_DEFAULT_HOOK_ORDER));
 ?>
 	<style type="text/css">	
 	.add-attribution-help-box {
@@ -227,26 +232,43 @@ function add_source_information_box ($page, $box = NULL) {
 			} )
 		} );
 	</script>
-	<?php
+<?php
+	if ($page->for_default_settings()) :
+?>
+	<h3>Advanced Settings</h3>
+	<table class="edit-form narrow">
+	<tbody>
+	<tr><th scope="row"><?php _e("Hook Order:") ?></th>
+	<td><input type="number" name="add_attribution_hook_order" value="<?php print esc_attr($hookOrder); ?>" /></td></tr>
+	</tbody>
+	</table>
+<?php
+	endif;
 } /* add_source_information_box () */
 
 function add_source_information_save ($params, $page) {
-	if ((isset($params['save']) or isset($params['submit']))
-	and isset($params['add_attribution'])) :
-		foreach ($params['add_attribution'] as $index => $line) :
-			if (0 == strlen(trim($line['template']))) :
-				unset($params['add_attribution'][$index]);
+
+	if (isset($params['save']) or isset($params['submit'])) :
+		if (isset($params['add_attribution'])) :
+			foreach ($params['add_attribution'] as $index => $line) :
+				if (0 == strlen(trim($line['template']))) :
+					unset($params['add_attribution'][$index]);
+				endif;
+			endforeach;
+
+			// Convert indexes to 0..(N-1) to avoid possible collisions
+			$params['add_attribution'] = array_values($params['add_attribution']);
+
+			if ($page->for_feed_settings()) :
+				$page->link->settings['add attribution rules'] = serialize($params['add_attribution']);
+				$page->link->save_settings(/*reload=*/ true);
+			else :
+				update_option('feedwordpress_add_attribution', $params['add_attribution']);
 			endif;
-		endforeach;
-
-		// Convert indexes to 0..(N-1) to avoid possible collisions
-		$params['add_attribution'] = array_values($params['add_attribution']);
-
-		if ($page->for_feed_settings()) :
-			$page->link->settings['add attribution rules'] = serialize($params['add_attribution']);
-			$page->link->save_settings(/*reload=*/ true);
-		else :
-			update_option('feedwordpress_add_attribution', $params['add_attribution']);
+		endif;
+		
+		if (isset($params['add_attribution_hook_order'])) :
+			$page->update_setting('add attribution hook order', intval($params['add_attribution_hook_order']));
 		endif;
 	endif;
 }
